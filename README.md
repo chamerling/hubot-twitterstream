@@ -24,7 +24,7 @@ List hashtags you subscribed to:
     
 Clear subscriptions:
 
-    hubot twitterstream list
+    hubot twitterstream clear
 
 Note: There are some stacktraces due to exception comming from the ntwitter library when creating multiple subscriptions but all is still working fine.
 

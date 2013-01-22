@@ -1,0 +1,35 @@
+{
+  "name": "hubot-twitterstream-script",
+  "version": "0.0.1",
+  "description": "Hubot Twitter Streaming",
+  "author": "Christophe Hamerling <christophe.hamerling@ow2.org>",
+  "homepage": "http://github.com/chamerling/hubot-twitterstream-script",
+  "keywords": [
+    "node", "hubot", "twitter"
+  ],
+  "maintainers": [{
+    "name": "Christophe Hamerling",
+    "email": "christophe.hamerling@ow2.org"
+  }],
+  "contributors": [],
+  "licenses": [{
+    "type": "MIT",
+    "url": "http://mths.be/mit"
+  }],
+  "bugs": {
+    "url": "https://github.com/chamerling/hubot-twitterstream-script/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/chamerling/hubot-twitterstream-script.git"
+  },
+  "engines": {
+    "node": ">0.8.x",
+    "npm": ">1.0.x"
+  },
+  "dependencies": {
+    "hubot" : "latest",
+    "ntwitter": "0.5.0",
+    "underscore" : "latest"
+  }
+}

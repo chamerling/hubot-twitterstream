@@ -16,10 +16,10 @@ var twitter = require('ntwitter')
   , _ = require('underscore');
 
 var auth = {
-  "consumer_key" : "kc4lSJpjA35e6Bz8nTtusQ",
-  "consumer_secret" : "wf47JJZtHJowxVkuSPzLyy7UcthXqcKUhQxBRhTwX0",
-  "access_token_key" : "13024132-yn0bVZiAaW0OrOcTFHL1950ZgXEgh0VJSi1jiH7Ws",
-  "access_token_secret" : "o330Uu3oEKhWu3lm1n5O65JlCFOKQZ1TVWPWKpprGQ"
+  "consumer_key" : "",
+  "consumer_secret" : "",
+  "access_token_key" : "",
+  "access_token_secret" : ""
 }
 
 var twit = new twitter(auth);

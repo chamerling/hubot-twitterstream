@@ -3,6 +3,7 @@
 //
 // Commands:
 //   hubot twitterstream watch <tag>   - Start watching a tag
+//   hubot twitterstream unwatch <tag> - Stop  watching a tag
 //   hubot twitterstream list          - Get the watched tags list
 //   hubot twitterstream clear         - Kill them all!
 //
@@ -32,33 +33,55 @@ twit.verifyCredentials(function (err, data) {
 var streams = []
 
 module.exports = function(robot) {
-  
+
   robot.respond(/twitterstream watch (.*)$/i, function(msg) {
     var tag = msg.match[1]
     twit.stream('statuses/filter', {'track': tag}, function(stream) {
       streams.push({key : tag, fn : stream});
-      
+
       stream.on('data', function (data) {
         msg.send('@' + data.user.screen_name + " (" + data.user.name + ") - " + data.text + '\n');
       });
-      
+
       stream.on('destroy', function(data) {
         msg.send('I do not watch ' + tag + ' anymore...')
       })
     });
+    msg.send('I start watching ' + tag);
   });
-    
+
+  robot.respond(/twitterstream unwatch (.*)$/i, function(msg) {
+    var tag = msg.match[1]
+    var stream = _.find(streams, function(s) {
+      return (s.key == tag);
+    });
+    if (stream != undefined) {
+      stream.destroy();
+      streams = _.without(streams, _findWhere(streams, stream));
+      msg.send('I stopped watching ' + tag);
+    } else {
+      msg.send('I do not known such tag.');
+    }
+  });
+
   robot.respond(/twitterstream list/i, function(msg) {
-    _.each(streams, function(s) {
-      msg.send(s.key);
-    });
+    if (streams.length > 0) {
+      _.each(streams, function(s) {
+        msg.send(s.key);
+      });
+    } else {
+      msg.send('I have no tags.');
+    }
   });
-  
+
   robot.respond(/twitterstream clear/i, function(msg) {
-    _.each(streams, function(s) {
-      s.fn.destroy();
-    });
-    // TODO : Clear list once we are sure that all is destroyed (async...)
-    // streams = [];
+    if (streams.length > 0) {
+      _.each(streams, function(s) {
+        s.fn.destroy();
+        streams = _.without(streams, _.findWhere(streams, s));
+      });
+    } else {
+      msg.send('I have no tags.');
+    }
   });
 }

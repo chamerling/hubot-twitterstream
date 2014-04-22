@@ -56,7 +56,7 @@ module.exports = function(robot) {
       return (s.key == tag);
     });
     if (stream != undefined) {
-      stream.destroy();
+      stream.fn.destroy();
       streams = _.without(streams, _findWhere(streams, stream));
       msg.send('I stopped watching ' + tag);
     } else {

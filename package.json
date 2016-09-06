@@ -1,6 +1,6 @@
 {
   "name": "hubot-twitterstream-script",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Hubot Twitter Streaming",
   "author": "Christophe Hamerling <christophe.hamerling@ow2.org>",
   "homepage": "http://github.com/chamerling/hubot-twitterstream-script",
@@ -27,8 +27,8 @@
     "node": ">0.8.x",
     "npm": ">1.0.x"
   },
+  "main":"twitterstream.js",
   "dependencies": {
-    "hubot" : "latest",
     "ntwitter": "0.5.0",
     "underscore" : "latest"
   }

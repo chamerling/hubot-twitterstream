@@ -4,11 +4,27 @@ A [Hubot](http://hubot.github.com) script using the Twitter streaming API to be 
 
 ## Install
 
-- Clone this repository
-- Clone or download Hubot
-- Add ntwitter and underscore dependencies in Hubot as defined in the documentation : Add to package.json then run 'npm install'
-- Create an application on https://dev.twitter.com and set your tokens in 'twitterstream.js'
-- Copy twitterstream.js into your hubot/scripts folder
+- Install via npm
+```
+npm install hubot-twitterstream-script --save
+```
+- Add the following code in your external-scripts.json file.
+```
+["hubot-twitterstream-script"]
+```
+
+- Create an application on https://dev.twitter.com
+- Set the following environment variables before running hubot
+```
+export TWITTER_CONSUMER_KEY=XXXXXXXXXXXXXXX
+export TWITTER_CONSUMER_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+export TWITTER_ACCESS_TOKEN_KEY=XXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+export TWITTER_ACCESS_TOKEN_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+- Run hubot
+```
+bin/hubot
+```
 
 ## Usage
 
@@ -21,7 +37,7 @@ Subscribe to hashtags (launch command multiple times for multiple tags):
 List hashtags you subscribed to:
 
     hubot twitterstream list
-    
+
 Clear subscriptions:
 
     hubot twitterstream clear

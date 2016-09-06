@@ -7,20 +7,33 @@
 //   hubot twitterstream list          - Get the watched tags list
 //   hubot twitterstream clear         - Kill them all!
 //
+// Configuration:
+//
+// The following environment variables are required. You will need to create an application at https://dev.twitter.com
+// TWITTER_CONSUMER_KEY
+// TWITTER_CONSUMER_SECRET
+// TWITTER_ACCESS_TOKEN_KEY
+// TWITTER_ACCESS_TOKEN_SECRET
+//
 // Examples:
 //   hubot twitterstream watch github
 //
 // Author:
 //   Christophe Hamerling
 
+var consumer_key = process.env.TWITTER_CONSUMER_KEY
+var consumer_secret = process.env.TWITTER_CONSUMER_SECRET
+var access_token_key = process.env.TWITTER_ACCESS_TOKEN_KEY
+var access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET
+
 var twitter = require('ntwitter')
   , _ = require('underscore');
 
 var auth = {
-  "consumer_key" : "",
-  "consumer_secret" : "",
-  "access_token_key" : "",
-  "access_token_secret" : ""
+  "consumer_key" : consumer_key,
+  "consumer_secret" : consumer_secret,
+  "access_token_key" : access_token_key,
+  "access_token_secret" : access_token_secret
 }
 
 var twit = new twitter(auth);
@@ -47,7 +60,7 @@ module.exports = function(robot) {
         msg.send('I do not watch ' + tag + ' anymore...')
       })
     });
-    msg.send('I start watching ' + tag);
+    msg.send('I started watching ' + tag);
   });
 
   robot.respond(/twitterstream unwatch (.*)$/i, function(msg) {

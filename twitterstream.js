@@ -70,7 +70,7 @@ module.exports = function(robot) {
     });
     if (stream != undefined) {
       stream.fn.destroy();
-      streams = _.without(streams, _findWhere(streams, stream));
+      streams = _.without(streams, _.findWhere(streams, stream));
       msg.send('I stopped watching ' + tag);
     } else {
       msg.send('I do not known such tag.');

@@ -35,7 +35,45 @@ var twit = new Twit(auth);
 
 module.exports = function(robot) {
 
-  robot.respond(/twitterstream watch (.*)$/i, function(msg) {
+  robot.respond(/twitterstream clear/i, clear);
+  robot.respond(/twitterstream list/i, list);
+  robot.respond(/twitterstream unwatch (.*)$/i, unwatch);
+  robot.respond(/twitterstream watch (.*)$/i, watch);
+
+  function clear(msg) {
+    for (var key in streams) {
+      if (streams.hasOwnProperty(key)) {
+        var stream = streams[key];
+        if (stream) {
+          stream.stop();
+        }
+      }
+    }
+  }
+
+  function list(msg) {
+    msg.send('I am listening to tweets:');
+    for (var key in streams) {
+      if (streams.hasOwnProperty(key)) {
+        msg.send('- ' + key);
+      }
+    }
+    msg.send('Hint: Type \'twitterstream watch XXX\' to listen to XXX tweets');
+  }
+
+  function unwatch(msg) {
+    var tag = msg.match[1]
+    var stream = streams[tag];
+    if (!stream) {
+      return msg.send('I do not listen to tweets with tag #' + tag);
+    }
+
+    stream.stop();
+    delete streams[tag];
+    msg.send('I stopped to watch #' + tag);
+  }
+
+  function watch(msg) {
     var tag = msg.match[1];
 
     var stream = T.stream('statuses/filter', {track: tag});
@@ -45,44 +83,6 @@ module.exports = function(robot) {
       msg.send('@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
     });
 
-    stream.on('destroy', function(data) {
-      msg.send('I do not watch #' + tag + ' anymore...')
-    });
-
     msg.send('I started to watch #' + tag);
-  });
-
-  robot.respond(/twitterstream unwatch (.*)$/i, function(msg) {
-    var tag = msg.match[1]
-    var stream = streams[tag];
-    if (!stream) {
-      return msg.send('I do not listen to tweets with tag #' + tag);
-    }
-
-    stream.destroy();
-    delete streams[tag];
-    msg.send('I stopped to watch #' + tag);
-  });
-
-  robot.respond(/twitterstream list/i, function(msg) {
-
-    msg.send('I listen to tweets:');
-    for (var key in streams) {
-      if (streams.hasOwnProperty(key)) {
-        msg.send('- ' + key);
-      }
-    }
-    msg.send('Hint: Type \'twitterstream watch XXX\' to listen to XXX tweets');
-  });
-
-  robot.respond(/twitterstream clear/i, function(msg) {
-    for (var key in streams) {
-      if (streams.hasOwnProperty(key)) {
-        var stream = streams[key];
-        if (stream) {
-          stream.destroy();
-        }
-      }
-    }
-  });
+  }
 };

@@ -47,13 +47,11 @@ Clear subscriptions:
 
     hubot twitterstream clear
 
-Note: There are some stacktraces due to exception comming from the ntwitter library when creating multiple subscriptions but all is still working fine.
-
 ## License
 
 (The MIT License)
 
-Copyright (c) 2013-2016 Christophe Hamerling <christophe.hamerling@gmail.com> 
+Copyright (c) 2013-2016 Christophe Hamerling <christophe.hamerling@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

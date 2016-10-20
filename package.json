@@ -1,6 +1,6 @@
 {
   "name": "hubot-twitterstream",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Hubot Twitter Streaming",
   "author": "Christophe Hamerling <christophe.hamerling@gmail.com>",
   "homepage": "http://github.com/chamerling/hubot-twitterstream",

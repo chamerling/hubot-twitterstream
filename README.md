@@ -1,27 +1,32 @@
-# hubot-twitterstream-script
+# hubot-twitterstream
 
 A [Hubot](http://hubot.github.com) script using the Twitter streaming API to be notified on defined hashtags.
 
 ## Install
 
 - Install via npm
+
 ```
-npm install hubot-twitterstream-script --save
+npm install hubot-twitterstream --save
 ```
 - Add the following code in your external-scripts.json file.
+
 ```
-["hubot-twitterstream-script"]
+["hubot-twitterstream"]
 ```
 
 - Create an application on https://dev.twitter.com
 - Set the following environment variables before running hubot
+
 ```
 export TWITTER_CONSUMER_KEY=XXXXXXXXXXXXXXX
 export TWITTER_CONSUMER_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 export TWITTER_ACCESS_TOKEN_KEY=XXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 export TWITTER_ACCESS_TOKEN_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
+
 - Run hubot
+
 ```
 bin/hubot
 ```
@@ -48,7 +53,7 @@ Note: There are some stacktraces due to exception comming from the ntwitter libr
 
 (The MIT License)
 
-Copyright (c) 2013 [Christophe Hamerling] (http://chamerling.org)  
+Copyright (c) 2013-2016 Christophe Hamerling <christophe.hamerling@gmail.com> 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

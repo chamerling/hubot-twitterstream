@@ -76,7 +76,7 @@ module.exports = function(robot) {
   function watch(msg) {
     var tag = msg.match[1];
 
-    var stream = T.stream('statuses/filter', {track: tag});
+    var stream = twit.stream('statuses/filter', {track: tag});
     streams[tag] = stream;
 
     stream.on('tweet', function(tweet) {

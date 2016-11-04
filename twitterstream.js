@@ -2,8 +2,8 @@
 //  Subscribe to tweets matching keywords
 //
 // Commands:
-//   hubot twitterstream watch <keyword>   - Start watching a keyword
-//   hubot twitterstream unwatch <keyword> - Stop  watching a keyword
+//   hubot twitterstream track <keyword>   - Start watching a keyword
+//   hubot twitterstream untrack <keyword> - Stop  watching a keyword
 //   hubot twitterstream list          - Get the watched keywords list in current room
 //   hubot twitterstream clear         - Stop watching all keywords in current room
 //
@@ -24,7 +24,7 @@
 // Author:
 //   Christophe Hamerling
 
-var BRAIN_TAGS = 'twitterstreamtags';
+var BRAIN_TWITTER_STREAMS = 'twitterstreams';
 var Twit = require('twit');
 var _ = require('lodash');
 
@@ -43,8 +43,8 @@ module.exports = function(robot) {
 
   robot.respond(/twitterstream clear/i, clear);
   robot.respond(/twitterstream list/i, list);
-  robot.respond(/twitterstream unwatch (.*)$/i, unwatch);
-  robot.respond(/twitterstream watch (.*)$/i, watch);
+  robot.respond(/twitterstream untrack (.*)$/i, untrack);
+  robot.respond(/twitterstream track (.*)$/i, track);
 
   robot.brain.on('loaded', function(data) {
     if (loaded) {
@@ -54,16 +54,14 @@ module.exports = function(robot) {
     loaded = true;
 
     if (process.env.HUBOT_TWITTERSTREAM_CLEAN_SUBSCRIPTIONS) {
-      robot.brain.data[BRAIN_TAGS] = [];
+      robot.brain.data[BRAIN_TWITTER_STREAMS] = [];
       return;
     }
 
     restoreSubscriptions();
   });
 
-
   function clear(msg) {
-    var tag = msg.match[1];
 
     function match(subscription) {
       return subscription.room === msg.message.room;
@@ -79,21 +77,21 @@ module.exports = function(robot) {
       subscription.stream.stop();
     });
 
-    _.remove(robot.brain.data[BRAIN_TAGS], match);
+    _.remove(robot.brain.data[BRAIN_TWITTER_STREAMS], match);
 
     msg.send('Unsubscribed from all');
   }
 
-  function createStreamForTag(tag, room) {
-    var stream = twit.stream('statuses/filter', {track: tag});
+  function createTrackStream(word, room) {
+    var stream = twit.stream('statuses/filter', {track: word});
 
     stream.on('tweet', function(tweet) {
       robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
     });
 
-    robot.messageRoom(room, 'I started to watch tweets #' + tag);
+    robot.messageRoom(room, 'I started to watch tweets "' + word + '"');
 
-    saveTagStream(tag, room, stream);
+    saveTrackStream(word, room, stream);
   }
 
   function list(msg) {
@@ -111,61 +109,61 @@ module.exports = function(robot) {
       return msg.send(currentRoomTags.join('\n'));
     }
 
-    msg.send('No subscriptions. Hint: Type \'twitterstream watch XXX\' to listen to XXX related tweets in current room');
+    msg.send('No subscriptions. Hint: Type \'twitterstream track XXX\' to listen to XXX related tweets in current room');
   }
 
   function restoreSubscriptions() {
-    var tags = robot.brain.data[BRAIN_TAGS];
+    var subscriptions = robot.brain.data[BRAIN_TWITTER_STREAMS];
 
-    if (!tags || !tags.length) {
-      return robot.brain.data[BRAIN_TAGS] = [];
+    if (!subscriptions || !subscriptions.length) {
+      return robot.brain.data[BRAIN_TWITTER_STREAMS] = [];
     }
 
-    tags.forEach(restoreTagSubscription);
+    subscriptions.forEach(restoreTrackSubscription);
   }
 
-  function restoreTagSubscription(subscription) {
+  function restoreTrackSubscription(subscription) {
     if (!subscription || !subscription.tag || !subscription.room) {
       return robot.logger.error('Can not restore subscription', subscription);
     }
 
-    createStreamForTag(subscription.tag, subscription.room);
+    createTrackStream(subscription.tag, subscription.room);
   }
 
-  function saveTagStream(tag, room, stream) {
-    streams.push({stream: stream, tag: tag, room: room});
-    var found = _.find(robot.brain.data[BRAIN_TAGS], function(subscription) {
-      return subscription.tag === tag && subscription.room === room;
+  function saveTrackStream(word, room, stream) {
+    streams.push({stream: stream, tag: word, room: room, type: 'track'});
+    var found = _.find(robot.brain.data[BRAIN_TWITTER_STREAMS], function(subscription) {
+      return subscription.tag === word && subscription.room === room && subscription.type === 'track';
     });
 
     if (!found) {
-      robot.brain.data[BRAIN_TAGS].push({tag: tag, room: room});
+      robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: word, room: room, type: 'track'});
     }
   }
 
-  function unwatch(msg) {
-    var tag = msg.match[1];
+  function untrack(msg) {
+    var word = msg.match[1];
     var room = msg.message.room;
 
     function match(subscription) {
-      return subscription.room === msg.message.room && subscription.tag === tag;
+      return subscription.room === msg.message.room && subscription.tag === word && subscription.type === 'track';
     }
 
     var toRemove = _.remove(streams, match);
     if (!toRemove.length) {
-      return msg.send('I do not listen to tweets with tag #' + tag);
+      return msg.send('I do not listen to tweets with word "' + word + '"');
     }
 
     toRemove.forEach(function(subscription) {
       subscription.stream.stop();
     });
 
-    _.remove(robot.brain.data[BRAIN_TAGS], match);
+    _.remove(robot.brain.data[BRAIN_TWITTER_STREAMS], match);
 
-    msg.send('I stopped to watch #' + tag);
+    msg.send('I stopped to watch "' + word + '"');
   }
 
-  function watch(msg) {
-    createStreamForTag(msg.match[1], msg.message.room);
+  function track(msg) {
+    createTrackStream(msg.match[1], msg.message.room);
   }
 };

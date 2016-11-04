@@ -37,13 +37,17 @@ As defined in the twitterstream.js header you can:
 
 Subscribe to keywords (launch command multiple times for multiple keywords):
 
-    hubot twitterstream watch github
+    hubot twitterstream track github
 
-List keywords you subscribed to:
+Unsubscribe to keywords:
+
+    hubot twitterstream untrack github
+
+List subscriptions in current room:
 
     hubot twitterstream list
 
-Clear keywords subscriptions:
+Clear subscriptions in current room:
 
     hubot twitterstream clear
 

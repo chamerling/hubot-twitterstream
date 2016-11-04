@@ -1,6 +1,6 @@
 # hubot-twitterstream
 
-A [Hubot](http://hubot.github.com) script using the Twitter streaming API to be notified on defined keywords.
+A [Hubot](http://hubot.github.com) script using the Twitter streaming API to track tweets from keywords/users and will publish them in realtime in the room subscription has been created.
 
 ## Install
 
@@ -33,8 +33,6 @@ bin/hubot
 
 ## Usage
 
-As defined in the twitterstream.js header you can:
-
 Subscribe to keywords (launch command multiple times for multiple keywords):
 
     hubot twitterstream track github
@@ -43,6 +41,15 @@ Unsubscribe to keywords:
 
     hubot twitterstream untrack github
 
+Subscribe to someone tweets:
+
+    hubot twitterstream follow nodejs
+    // will listen to tweets from @nodejs
+
+Unsubscribe from someone tweets:
+
+    hubot twitterstream unfollow nodejs
+
 List subscriptions in current room:
 
     hubot twitterstream list
@@ -50,6 +57,8 @@ List subscriptions in current room:
 Clear subscriptions in current room:
 
     hubot twitterstream clear
+
+Note: The subscriptions are persisted in hubot brain so they will be restored on restart.
 
 ## License
 

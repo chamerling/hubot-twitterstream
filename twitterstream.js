@@ -4,6 +4,8 @@
 // Commands:
 //   hubot twitterstream track <keyword>   - Start watching a keyword
 //   hubot twitterstream untrack <keyword> - Stop  watching a keyword
+//   hubot twitterstream watch <screen_name>   - Start watching tweets from @screen_name
+//   hubot twitterstream untrack <screen_name> - Stop watching tweets from @screen_name
 //   hubot twitterstream list          - Get the watched keywords list in current room
 //   hubot twitterstream clear         - Stop watching all keywords in current room
 //
@@ -19,14 +21,20 @@
 // HUBOT_TWITTERSTREAM_CLEAN_SUBSCRIPTIONS: Clear all subscriptions at boot time.
 //
 // Examples:
-//   hubot twitterstream watch github
+//   hubot twitterstream track github
+//   hubot twitterstream follow nodejs
 //
 // Author:
 //   Christophe Hamerling
 
-var BRAIN_TWITTER_STREAMS = 'twitterstreams';
 var Twit = require('twit');
 var _ = require('lodash');
+
+var BRAIN_TWITTER_STREAMS = 'twitterstreams';
+var TYPES = {
+  TRACK: 'track',
+  FOLLOW: 'follow'
+};
 
 var auth = {
   consumer_key: process.env.HUBOT_TWITTERSTREAM_CONSUMER_KEY,
@@ -42,7 +50,9 @@ var twit = new Twit(auth);
 module.exports = function(robot) {
 
   robot.respond(/twitterstream clear/i, clear);
+  robot.respond(/twitterstream follow (.*)$/i, follow);
   robot.respond(/twitterstream list/i, list);
+  robot.respond(/twitterstream unfollow (.*)$/i, unfollow);
   robot.respond(/twitterstream untrack (.*)$/i, untrack);
   robot.respond(/twitterstream track (.*)$/i, track);
 
@@ -82,16 +92,51 @@ module.exports = function(robot) {
     msg.send('Unsubscribed from all');
   }
 
-  function createTrackStream(word, room) {
-    var stream = twit.stream('statuses/filter', {track: word});
+  function createStream(type, tag, room) {
+    var filter = {};
+    filter[type] = tag;
+
+    var stream = twit.stream('statuses/filter', filter);
 
     stream.on('tweet', function(tweet) {
-      robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
+
+      function send() {
+        robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
+      }
+
+      if (type === TYPES.FOLLOW && tweet.user.id_str === tag) {
+        return send();
+      }
+
+      send();
     });
 
-    robot.messageRoom(room, 'I started to watch tweets "' + word + '"');
+    robot.logger.info('Started a new twitter stream', filter);
 
-    saveTrackStream(word, room, stream);
+    saveStream(type, tag, room, stream);
+  }
+
+  function follow(msg) {
+    getIdFromScreenName(msg.match[1], function(err, id) {
+      if (err) {
+        return robot.logger.error('Can not get twitter user id from ' + msg.match[1], err);
+      }
+      createStream(TYPES.FOLLOW, id, msg.message.room);
+    });
+  }
+
+  function getIdFromScreenName(screen_name, callback) {
+    twit.get('users/lookup', {screen_name: screen_name}, function(err, response) {
+      if (err) {
+        return callback(err);
+      }
+
+      if (!response || !response.length) {
+        return callback(new Error('User not found'));
+      }
+
+      callback(null, response[0].id_str);
+    });
   }
 
   function list(msg) {
@@ -109,7 +154,7 @@ module.exports = function(robot) {
       return msg.send(currentRoomTags.join('\n'));
     }
 
-    msg.send('No subscriptions. Hint: Type \'twitterstream track XXX\' to listen to XXX related tweets in current room');
+    msg.send('No subscriptions. Hint: Type \'twitterstream track/follow XXX\' to listen to XXX related tweets in current room');
   }
 
   function restoreSubscriptions() {
@@ -119,39 +164,37 @@ module.exports = function(robot) {
       return robot.brain.data[BRAIN_TWITTER_STREAMS] = [];
     }
 
-    subscriptions.forEach(restoreTrackSubscription);
+    subscriptions.forEach(restoreSubscription);
   }
 
-  function restoreTrackSubscription(subscription) {
-    if (!subscription || !subscription.tag || !subscription.room) {
-      return robot.logger.error('Can not restore subscription', subscription);
+  function restoreSubscription(subscription) {
+    if (!subscription || !subscription.tag || !subscription.room || !subscription.type) {
+      return robot.logger.error('Can not restore follow subscription', subscription);
     }
 
-    createTrackStream(subscription.tag, subscription.room);
+    createStream(subscription.type, subscription.tag, subscription.room);
   }
 
-  function saveTrackStream(word, room, stream) {
-    streams.push({stream: stream, tag: word, room: room, type: 'track'});
+  function saveStream(type, tag, room, stream) {
+    streams.push({stream: stream, tag: tag, room: room, type: type});
     var found = _.find(robot.brain.data[BRAIN_TWITTER_STREAMS], function(subscription) {
-      return subscription.tag === word && subscription.room === room && subscription.type === 'track';
+      return subscription.tag === tag && subscription.room === room && subscription.type === type;
     });
 
     if (!found) {
-      robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: word, room: room, type: 'track'});
+      robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
     }
   }
 
-  function untrack(msg) {
-    var word = msg.match[1];
-    var room = msg.message.room;
-
+  function unsubscribe(type, tag, room) {
     function match(subscription) {
-      return subscription.room === msg.message.room && subscription.tag === word && subscription.type === 'track';
+      return subscription.room === room && subscription.tag === tag && subscription.type === type;
     }
 
     var toRemove = _.remove(streams, match);
     if (!toRemove.length) {
-      return msg.send('I do not listen to tweets with word "' + word + '"');
+      // TODO: Warn
+      return;
     }
 
     toRemove.forEach(function(subscription) {
@@ -159,11 +202,28 @@ module.exports = function(robot) {
     });
 
     _.remove(robot.brain.data[BRAIN_TWITTER_STREAMS], match);
+  }
 
-    msg.send('I stopped to watch "' + word + '"');
+  function unfollow(msg) {
+    var screen_name = msg.match[1];
+
+    getIdFromScreenName(screen_name, function(err, id) {
+      if (err) {
+        return robot.logger.error('Can not get twitter user id from ' + screen_name, err);
+      }
+
+      unsubscribe(TYPES.FOLLOW, id, msg.message.room);
+      msg.send('I stopped to watch tweets from "' + screen_name + '"');
+    });
+  }
+
+  function untrack(msg) {
+    var word = msg.match[1];
+    unsubscribe(TYPES.TRACK, word, msg.message.room);
+    msg.send('I stopped to watch tweets about "' + word + '"');
   }
 
   function track(msg) {
-    createTrackStream(msg.match[1], msg.message.room);
+    createStream(TYPES.TRACK, msg.match[1], msg.message.room);
   }
 };

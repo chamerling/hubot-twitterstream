@@ -1,7 +1,7 @@
 {
   "name": "hubot-twitterstream",
-  "version": "0.1.0",
-  "description": "Hubot Twitter Streaming",
+  "version": "0.2.0",
+  "description": "Hubot Twitter Streaming. Listen to tweets from keywords and users",
   "author": "Christophe Hamerling <christophe.hamerling@gmail.com>",
   "homepage": "http://github.com/chamerling/hubot-twitterstream",
   "keywords": [

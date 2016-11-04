@@ -1,15 +1,16 @@
 // Description:
-//  Watch Twitter streams
+//  Subscribe to tweets matching keywords
 //
 // Commands:
-//   hubot twitterstream watch <tag>   - Start watching a tag
-//   hubot twitterstream unwatch <tag> - Stop  watching a tag
-//   hubot twitterstream list          - Get the watched tags list in current room
-//   hubot twitterstream clear         - Stop watching all in current room
+//   hubot twitterstream watch <keyword>   - Start watching a keyword
+//   hubot twitterstream unwatch <keyword> - Stop  watching a keyword
+//   hubot twitterstream list          - Get the watched keywords list in current room
+//   hubot twitterstream clear         - Stop watching all keywords in current room
 //
 // Configuration:
 //
 // The following environment variables are required. You will need to create an application at https://dev.twitter.com
+//
 // HUBOT_TWITTERSTREAM_CONSUMER_KEY
 // HUBOT_TWITTERSTREAM_CONSUMER_SECRET
 // HUBOT_TWITTERSTREAM_ACCESS_TOKEN_KEY

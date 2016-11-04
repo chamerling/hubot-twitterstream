@@ -1,6 +1,6 @@
 # hubot-twitterstream
 
-A [Hubot](http://hubot.github.com) script using the Twitter streaming API to be notified on defined hashtags.
+A [Hubot](http://hubot.github.com) script using the Twitter streaming API to be notified on defined keywords.
 
 ## Install
 
@@ -35,15 +35,15 @@ bin/hubot
 
 As defined in the twitterstream.js header you can:
 
-Subscribe to hashtags (launch command multiple times for multiple tags):
+Subscribe to keywords (launch command multiple times for multiple keywords):
 
     hubot twitterstream watch github
 
-List hashtags you subscribed to:
+List keywords you subscribed to:
 
     hubot twitterstream list
 
-Clear subscriptions:
+Clear keywords subscriptions:
 
     hubot twitterstream clear
 

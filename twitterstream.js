@@ -100,15 +100,24 @@ module.exports = function(robot) {
 
     stream.on('tweet', function(tweet) {
 
+      function isReply(_tweet) {
+        if ( _tweet.in_reply_to_status_id
+          || _tweet.in_reply_to_status_id_str
+          || _tweet.in_reply_to_user_id
+          || _tweet.in_reply_to_user_id_str
+          || _tweet.in_reply_to_screen_name )
+          return true
+        return false
+      }
+
       function send() {
         robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
       }
 
-      if (type === TYPES.FOLLOW && tweet.user.id_str === tag) {
+      if (type === TYPES.FOLLOW && tweet.user.id_str === tag && !isReply(tweet)) {
         return send();
       }
-
-      send();
+      if(!isReply(tweet)) send();
     });
 
     robot.logger.info('Started a new twitter stream', filter);

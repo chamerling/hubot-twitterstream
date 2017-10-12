@@ -49,12 +49,12 @@ var twit = new Twit(auth);
 
 module.exports = function(robot) {
 
-  robot.respond(/twitterstream clear/i, clear);
-  robot.respond(/twitterstream follow (.*)$/i, follow);
-  robot.respond(/twitterstream list/i, list);
-  robot.respond(/twitterstream unfollow (.*)$/i, unfollow);
-  robot.respond(/twitterstream untrack (.*)$/i, untrack);
-  robot.respond(/twitterstream track (.*)$/i, track);
+  robot.respond(/twitterstream clear/i, _auth.bind(null, clear));
+  robot.respond(/twitterstream follow (.*)$/i, _auth.bind(null, follow));
+  robot.respond(/twitterstream list/i, _auth.bind(null, list));
+  robot.respond(/twitterstream unfollow (.*)$/i, _auth.bind(null, unfollow));
+  robot.respond(/twitterstream untrack (.*)$/i, _auth.bind(null, untrack));
+  robot.respond(/twitterstream track (.*)$/i, _auth.bind(null, track));
 
   robot.brain.on('loaded', function(data) {
     if (loaded) {
@@ -70,6 +70,21 @@ module.exports = function(robot) {
 
     restoreSubscriptions();
   });
+
+
+  function _auth(command,msg) {
+    var role, user;
+    role = 'twitterbot';
+    user = robot.brain.userForName(msg.message.user.name);
+    if (user == null) {
+      return msg.send(name + " does not exist");
+    }
+    if (!robot.auth.hasRole(user, role)) {
+      msg.send("Access Denied. You need role " + role + " to perform this action.");
+      return;
+    }
+     return command(msg)
+  }
 
   function clear(msg) {
 

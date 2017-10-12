@@ -107,7 +107,7 @@ module.exports = function(robot) {
     msg.send('Unsubscribed from all');
   }
 
-  function createStream(type, tag, room) {
+  function createStream(type, tag, room, screen_name) {
     var filter = {};
     filter[type] = tag;
 
@@ -116,7 +116,7 @@ module.exports = function(robot) {
     stream.on('tweet', function(tweet) {
 
       function isReply(_tweet) {
-        if ( _tweet.in_reply_to_status_id
+        if (_tweet.in_reply_to_status_id
           || _tweet.in_reply_to_status_id_str
           || _tweet.in_reply_to_user_id
           || _tweet.in_reply_to_user_id_str
@@ -126,6 +126,7 @@ module.exports = function(robot) {
       }
 
       function send() {
+        if(tweet.user.screen_name == screen_name)
         robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
       }
 
@@ -145,7 +146,7 @@ module.exports = function(robot) {
       if (err) {
         return robot.logger.error('Can not get twitter user id from ' + msg.match[1], err);
       }
-      createStream(TYPES.FOLLOW, id, msg.message.room);
+      createStream(TYPES.FOLLOW, id, msg.message.room, msg.match[1]);
     });
   }
 

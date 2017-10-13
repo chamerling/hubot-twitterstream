@@ -127,7 +127,7 @@ module.exports = function(robot) {
 
       function send() {
         if(tweet.user.screen_name == screen_name)
-        robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
+        robot.messageRoom(room, '*@' + tweet.user.screen_name + "* (" + tweet.user.name + ") - " + tweet.text + " \nhttps://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str+" \n");
       }
 
       if (type === TYPES.FOLLOW && tweet.user.id_str === tag && !isReply(tweet)) {

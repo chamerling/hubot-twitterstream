@@ -135,7 +135,7 @@ module.exports = function(robot) {
               var re = new RegExp(find, 'g');
               var text = response.data.html.replace(re,"\\\"")
               robot.adapter.customMessage({
-                channel: room.toUpperCase(),
+                channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
                 msg: '',
                 attachments: [
                   {

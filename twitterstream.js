@@ -29,6 +29,7 @@
 
 var Twit = require('twit');
 var _ = require('lodash');
+var axios = require('axios');
 
 var BRAIN_TWITTER_STREAMS = 'twitterstreams';
 var TYPES = {
@@ -126,8 +127,31 @@ module.exports = function(robot) {
       }
 
       function send() {
-        if(tweet.user.screen_name == screen_name)
-        robot.messageRoom(room, '*@' + tweet.user.screen_name + "* (" + tweet.user.name + ") - " + tweet.text + " \nhttps://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str+" \n");
+        if(tweet.user.screen_name == screen_name){
+          var tweet_url = "https://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str
+          axios.get("https://publish.twitter.com/oembed?url="+tweet_url)
+          .then(response => {
+              var find = "\"";
+              var re = new RegExp(find, 'g');
+              var text = response.data.html.replace(re,"\\\"")
+              robot.adapter.customMessage({
+                channel: room.toUpperCase(),
+                msg: '',
+                attachments: [
+                  {
+                     title: "@"+tweet.user.screen_name+":",
+                     title_link: response.data.url,
+                     text: tweet.text,
+                     author_name: response.data.author_name,
+                     author_link: response.data.author_url,
+                     image_url: ''
+                  }
+                ]
+              });
+              //robot.messageRoom(room, response.data.html);
+              //robot.messageRoom(room, '*@' + tweet.user.screen_name + "* (" + tweet.user.name + ") - " + tweet.text + " \n");
+          })
+        }
       }
 
       if (type === TYPES.FOLLOW && tweet.user.id_str === tag && !isReply(tweet)) {

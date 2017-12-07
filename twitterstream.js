@@ -109,7 +109,7 @@ module.exports = function(robot) {
   }
 
   function createStream(type, tag, room, screen_name) {
-    var filter = {};
+    var filter = {tweet_mode: 'extended'};
     filter[type] = tag;
 
     var stream = twit.stream('statuses/filter', filter);
@@ -131,11 +131,12 @@ module.exports = function(robot) {
           var tweet_url = "https://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str
           axios.get("https://publish.twitter.com/oembed?url="+tweet_url)
           .then(response => {
+              console.log("response.data", response.data);
               var find = "\"";
               var re = new RegExp(find, 'g');
               var text = response.data.html.replace(re,"\\\"")
               robot.adapter.customMessage({
-                channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
+                channel: msg.message.room, // <-- HARDCODED channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
                 msg: '',
                 attachments: [
                   {

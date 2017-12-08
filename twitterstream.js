@@ -29,7 +29,6 @@
 
 var Twit = require('twit');
 var _ = require('lodash');
-var axios = require('axios');
 
 var BRAIN_TWITTER_STREAMS = 'twitterstreams';
 var TYPES = {
@@ -115,7 +114,6 @@ module.exports = function(robot) {
     var stream = twit.stream('statuses/filter', filter);
 
     stream.on('tweet', function(tweet) {
-
       function isReply(_tweet) {
         if (_tweet.in_reply_to_status_id
           || _tweet.in_reply_to_status_id_str
@@ -127,31 +125,37 @@ module.exports = function(robot) {
       }
 
       function send() {
-        if(tweet.user.screen_name == screen_name){
+        if(tweet.user.screen_name.trim() === screen_name.trim()){
           var tweet_url = "https://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str
-          axios.get("https://publish.twitter.com/oembed?url="+tweet_url)
-          .then(response => {
-              console.log("response.data", response.data);
-              var find = "\"";
-              var re = new RegExp(find, 'g');
-              var text = response.data.html.replace(re,"\\\"")
-              robot.adapter.customMessage({
-                channel: msg.message.room, // <-- HARDCODED channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
-                msg: '',
-                attachments: [
-                  {
-                     title: "@"+tweet.user.screen_name+":",
-                     title_link: response.data.url,
-                     text: tweet.text,
-                     author_name: response.data.author_name,
-                     author_link: response.data.author_url,
-                     image_url: ''
-                  }
-                ]
-              });
-              //robot.messageRoom(room, response.data.html);
-              //robot.messageRoom(room, '*@' + tweet.user.screen_name + "* (" + tweet.user.name + ") - " + tweet.text + " \n");
-          })
+
+          var message = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
+          function replaceURL(item){ message = message.replace(item.url, item.expanded_url) }
+
+          // URL Expanding for user trust
+          if(tweet.extended_tweet){
+            if(tweet.extended_tweet.entities && tweet.extended_tweet.entities.urls){
+              tweet.extended_tweet.entities.urls.forEach(replaceURL)
+            }
+          } else {
+            if(tweet.entities && tweet.entities.urls){
+              tweet.text = tweet.entities.urls.forEach(replaceURL)
+            }
+          }
+
+          robot.adapter.customMessage({
+            channel: 'sJRNTGfnbGfypbquP', //room.toUpperCase(),  <-- HARDCODED channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
+            msg: '',
+            attachments: [
+              {
+                 title: "@"+tweet.user.screen_name+":",
+                 title_link: tweet_url,
+                 text: message,
+                 author_name: tweet.user.name,
+                 author_link: "http://twitter.com/" + tweet.user.screen_name,
+                 image_url: ''
+              }
+            ]
+          });
         }
       }
 
@@ -232,7 +236,12 @@ module.exports = function(robot) {
     });
 
     if (!found) {
-      robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+      if(robot.brain.data[BRAIN_TWITTER_STREAMS])
+          robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+      else{
+            robot.brain.data[BRAIN_TWITTER_STREAMS] = []
+            robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+        }
     }
   }
 

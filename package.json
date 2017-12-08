@@ -35,7 +35,6 @@
   },
   "main": "twitterstream.js",
   "dependencies": {
-    "axios": "^0.16.2",
     "lodash": "^4.16.4",
     "twit": "^2.2.5"
   }

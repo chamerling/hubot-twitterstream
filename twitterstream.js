@@ -49,12 +49,12 @@ var twit = new Twit(auth);
 
 module.exports = function(robot) {
 
-  robot.respond(/twitterstream clear/i, clear);
-  robot.respond(/twitterstream follow (.*)$/i, follow);
-  robot.respond(/twitterstream list/i, list);
-  robot.respond(/twitterstream unfollow (.*)$/i, unfollow);
-  robot.respond(/twitterstream untrack (.*)$/i, untrack);
-  robot.respond(/twitterstream track (.*)$/i, track);
+  robot.respond(/twitterstream clear/i, _auth.bind(null, clear));
+  robot.respond(/twitterstream follow (.*)$/i, _auth.bind(null, follow));
+  robot.respond(/twitterstream list/i, _auth.bind(null, list));
+  robot.respond(/twitterstream unfollow (.*)$/i, _auth.bind(null, unfollow));
+  robot.respond(/twitterstream untrack (.*)$/i, _auth.bind(null, untrack));
+  robot.respond(/twitterstream track (.*)$/i, _auth.bind(null, track));
 
   robot.brain.on('loaded', function(data) {
     if (loaded) {
@@ -70,6 +70,21 @@ module.exports = function(robot) {
 
     restoreSubscriptions();
   });
+
+
+  function _auth(command,msg) {
+    var role, user;
+    role = 'twitterbot';
+    user = robot.brain.userForName(msg.message.user.name);
+    if (user == null) {
+      return msg.send(name + " does not exist");
+    }
+    if (!robot.auth.hasRole(user, role)) {
+      msg.send("Access Denied. You need role " + role + " to perform this action.");
+      return;
+    }
+     return command(msg)
+  }
 
   function clear(msg) {
 
@@ -92,23 +107,75 @@ module.exports = function(robot) {
     msg.send('Unsubscribed from all');
   }
 
-  function createStream(type, tag, room) {
-    var filter = {};
+  function createStream(type, tag, room, screen_name) {
+    var filter = {tweet_mode: 'extended'};
     filter[type] = tag;
 
     var stream = twit.stream('statuses/filter', filter);
 
     stream.on('tweet', function(tweet) {
+      function isReply(_tweet) {
+        if (_tweet.in_reply_to_status_id
+          || _tweet.in_reply_to_status_id_str
+          || _tweet.in_reply_to_user_id
+          || _tweet.in_reply_to_user_id_str
+          || _tweet.in_reply_to_screen_name )
+          return true
+        return false
+      }
 
       function send() {
-        robot.messageRoom(room, '@' + tweet.user.screen_name + " (" + tweet.user.name + ") - " + tweet.text + '\n');
+        if(tweet.user.screen_name.trim() === screen_name.trim()){
+          var tweet_url = "https://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str
+          var message = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
+
+          function replaceURL(item){ message = message.replace(item.url, item.expanded_url) }
+
+          // URL Expanding for user trust
+          if(tweet.extended_tweet){
+            if(tweet.extended_tweet.entities && tweet.extended_tweet.entities.urls){
+              tweet.extended_tweet.entities.urls.forEach(replaceURL)
+            }
+          } else {
+            if(tweet.entities && tweet.entities.urls){
+              tweet.text = tweet.entities.urls.forEach(replaceURL)
+            }
+          }
+          var roomPromise = robot.adapter.getRoomId(room)
+
+          roomPromise.then(function(roomName){
+            sendCustomMessage(robot.adapter, roomName, tweet, message)
+          })
+
+          function sendCustomMessage(_adp, _roomname, _tweet, _msg){
+
+            var retweetTemplate = "[:retweet: Retweet!](https://twitter.com/intent/retweet?tweet_id="+_tweet.id_str+")"
+            var replyTemplate   = "[:reply_tweet: Reply!](https://twitter.com/intent/tweet?in_reply_to="+_tweet.id_str+")"
+            var likeTemplate    = "[:like_tweet: Like!](https://twitter.com/intent/like?tweet_id="+_tweet.id_str+")"
+
+            _adp.customMessage({
+              channel: _roomname, //channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED BEFORE
+              msg: '',
+              attachments: [
+                {
+                   title: "@"+_tweet.user.screen_name+":",
+                   title_link: _tweet,
+                   text: _msg + "\n\n" + retweetTemplate + "    " + replyTemplate + "    " + likeTemplate,
+                   author_name: _tweet.user.name,
+                   author_link: "http://twitter.com/" + _tweet.user.screen_name,
+                   image_url: ''
+                }
+              ]
+            });
+          }
+
+        }
       }
 
-      if (type === TYPES.FOLLOW && tweet.user.id_str === tag) {
+      if (type === TYPES.FOLLOW && tweet.user.id_str === tag && !isReply(tweet)) {
         return send();
       }
-
-      send();
+      if(!isReply(tweet)) send();
     });
 
     robot.logger.info('Started a new twitter stream', filter);
@@ -121,7 +188,7 @@ module.exports = function(robot) {
       if (err) {
         return robot.logger.error('Can not get twitter user id from ' + msg.match[1], err);
       }
-      createStream(TYPES.FOLLOW, id, msg.message.room);
+      createStream(TYPES.FOLLOW, id, msg.message.room, msg.match[1]);
     });
   }
 
@@ -182,7 +249,12 @@ module.exports = function(robot) {
     });
 
     if (!found) {
-      robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+      if(robot.brain.data[BRAIN_TWITTER_STREAMS])
+          robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+      else{
+            robot.brain.data[BRAIN_TWITTER_STREAMS] = []
+            robot.brain.data[BRAIN_TWITTER_STREAMS].push({tag: tag, room: room, type: type});
+        }
     }
   }
 

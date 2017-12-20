@@ -127,8 +127,8 @@ module.exports = function(robot) {
       function send() {
         if(tweet.user.screen_name.trim() === screen_name.trim()){
           var tweet_url = "https://twitter.com/"+tweet.user.screen_name+"/status/"+tweet.id_str
-
           var message = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
+
           function replaceURL(item){ message = message.replace(item.url, item.expanded_url) }
 
           // URL Expanding for user trust
@@ -141,21 +141,34 @@ module.exports = function(robot) {
               tweet.text = tweet.entities.urls.forEach(replaceURL)
             }
           }
+          var roomPromise = robot.adapter.getRoomId(room)
 
-          robot.adapter.customMessage({
-            channel: 'sJRNTGfnbGfypbquP', //room.toUpperCase(),  <-- HARDCODED channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED
-            msg: '',
-            attachments: [
-              {
-                 title: "@"+tweet.user.screen_name+":",
-                 title_link: tweet_url,
-                 text: message,
-                 author_name: tweet.user.name,
-                 author_link: "http://twitter.com/" + tweet.user.screen_name,
-                 image_url: ''
-              }
-            ]
-          });
+          roomPromise.then(function(roomName){
+            sendCustomMessage(robot.adapter, roomName, tweet, message)
+          })
+
+          function sendCustomMessage(_adp, _roomname, _tweet, _msg){
+
+            var retweetTemplate = "[:retweet: Retweet!](https://twitter.com/intent/retweet?tweet_id="+_tweet.id_str+")"
+            var replyTemplate   = "[:reply_tweet: Reply!](https://twitter.com/intent/tweet?in_reply_to="+_tweet.id_str+")"
+            var likeTemplate    = "[:like_tweet: Like!](https://twitter.com/intent/like?tweet_id="+_tweet.id_str+")"
+
+            _adp.customMessage({
+              channel: _roomname, //channel: 'sJRNTGfnbGfypbquP', // <-- HARDCODED BEFORE
+              msg: '',
+              attachments: [
+                {
+                   title: "@"+_tweet.user.screen_name+":",
+                   title_link: _tweet,
+                   text: _msg + "\n\n" + retweetTemplate + "    " + replyTemplate + "    " + likeTemplate,
+                   author_name: _tweet.user.name,
+                   author_link: "http://twitter.com/" + _tweet.user.screen_name,
+                   image_url: ''
+                }
+              ]
+            });
+          }
+
         }
       }
 

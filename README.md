@@ -33,53 +33,41 @@ bin/hubot
 
 ## Usage
 
+Assuming you're using this script wity hubot-auth, so first you need to assign proper role to your username to access twitterbot commands
+
+	<your_bot_name> <your_user_name> has twitterbot role
+
 Subscribe to keywords (launch command multiple times for multiple keywords):
 
-    hubot twitterstream track github
+    <your_bot_name> twitterstream track github
 
 Unsubscribe to keywords:
 
-    hubot twitterstream untrack github
+    <your_bot_name> twitterstream untrack github
 
 Subscribe to someone tweets:
 
-    hubot twitterstream follow nodejs
+    <your_bot_name> twitterstream follow nodejs
     // will listen to tweets from @nodejs
 
 Unsubscribe from someone tweets:
 
-    hubot twitterstream unfollow nodejs
+    <your_bot_name> twitterstream unfollow nodejs
 
 List subscriptions in current room:
 
-    hubot twitterstream list
+    <your_bot_name> twitterstream list
 
 Clear subscriptions in current room:
 
-    hubot twitterstream clear
+    <your_bot_name> twitterstream clear
 
 Note: The subscriptions are persisted in hubot brain so they will be restored on restart.
 
-## License
+# Donate
 
-(The MIT License)
+I'm working on this script to keep it update and functional as much as I can,
+<br/>
+So feel free to buy me a cup of coffee :)
 
-Copyright (c) 2013-2016 Christophe Hamerling <christophe.hamerling@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
+ETH: 0x69756376573a4edcae8c25fc6571dafa5c791838
